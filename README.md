@@ -11,4 +11,4 @@ This step is shown in the fold "model_training". We attached a screenshoot(calle
 To run the code locally, you need run using command-line tools: python -W ignore sentiment_training.py --train data/train/ --validation data/dev/ --eval data/eval/ --model_output_dir model/ --model_dir model/ --num_epoch 3
 
 ## 4. SageMaker training
-This step is shown in the fold "sagemaker".
+This step is shown in the fold "sagemaker". 'Create.docx' is the process of running Tensorflow Model on SageMaker Notebook
