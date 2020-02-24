@@ -7,5 +7,5 @@
     "input_tensor_name": "embedding_input",
     "embedding_layer_name": "embedding",
     "bucket": "asg4",
-    "cloud": 1
+    "cloud": 0
 }
