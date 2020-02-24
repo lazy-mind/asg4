@@ -1,6 +1,10 @@
 # asg4
 ## 1. Pre Processing ETL
-This step is shown in the proprecessing.zip.
+This step is shown in the preprocess.zip.
+
+(I) upzip preprocess.zip, find preprocess.py in the directory
+
+(II) the modified code is in the function: "replace_token_with_index"
 
 ## 2. Run the Pre Processing on the dataset
 This step is shown in the fold "aws". job.py is the job's script code, and the json output file is shown as dev.json, eval.json, train.json. Also, we attached a screenshoot(called 'Job_result.docx') about successfully running the job.
