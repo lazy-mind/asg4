@@ -11,6 +11,11 @@ import math
 import tensorflow as tf
 import numpy as np
 from tensorflow.data import Dataset
+import sagemaker
+
+# s = sagemaker.Session()
+# all_files= s.list_s3_files("asg4", "dev_features/")
+# print(all_files)
 
 def train_input_fn(training_dir, config):
     return _input_fn(training_dir, config, "train")
@@ -33,10 +38,23 @@ def _load_json_file(json_path, config):
     features = []
     labels = []
 
-    with open(json_path, "r") as file:
+    if config["cloud"]==0:
+        with open(json_path, "r") as file:
 
-        for line in file:
+            for line in file:
 
+                entry = json.loads(line)
+
+                if len(entry["features"]) != config["padding_size"]:
+                    raise ValueError(
+                        "The size of the features of the entry with twitterid {} was not expected".format(
+                            entry["twitterid"]))
+
+                labels.append(entry["sentiment"] / 4)
+                features.append(entry["features"])
+    else:
+        contents = json_path.split("\n")
+        for line in contents:
             entry = json.loads(line)
 
             if len(entry["features"]) != config["padding_size"]:
@@ -52,16 +70,23 @@ def _load_json_file(json_path, config):
 def _input_fn(directory, config, mode):
 
     print("Fetching {} data...".format(mode))
-
-    all_files = os.listdir(directory)
-
+    
     all_features = []
     all_labels = []
-
-    for file in all_files:
-        features, labels = _load_json_file(os.path.join(directory, file), config)
-        all_features += features
-        all_labels += labels
+    
+    if config["cloud"]==0:
+        all_files = os.listdir(directory)
+        for file in all_files:
+            features, labels = _load_json_file(os.path.join(directory, file), config)
+            all_features += features
+            all_labels += labels
+    else:
+        s = sagemaker.Session()
+        all_files= s.list_s3_files(config["bucket"], directory)
+        for file in all_files[1:]:
+            features, labels = _load_json_file(s.read_s3_file(config["bucket"],file), config)
+            all_features += features
+            all_labels += labels
 
     num_data_points = len(all_features)
     num_batches = math.ceil(len(all_features) / config["batch_size"])

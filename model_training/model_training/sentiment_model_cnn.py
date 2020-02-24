@@ -7,6 +7,7 @@ Model definition for CNN sentiment training
 import os
 import tensorflow as tf
 import numpy as np
+import sagemaker
 
 
 def keras_model_fn(_, config):
@@ -19,16 +20,29 @@ def keras_model_fn(_, config):
     model = tf.keras.models.Sequential()
 
     embedding_matrix = np.zeros((config["embeddings_dictionary_size"], config["embeddings_vector_size"]))
-    file = open(config["embeddings_path"], "r")
+    
     index = 0
-    for word_vector in file:
-        if(len(word_vector.split())==25):
-            # print(len(word_vector.split()))
-            embedding_matrix[index,:] = word_vector.split()[0:]
-        else:
-            embedding_matrix[index,:] = word_vector.split()[1:]
-        index += 1
-    file.close()
+    if config["cloud"]==0:
+        file = open(config["embeddings_path"], "r")
+        for word_vector in file:
+            if(len(word_vector.split())==25):
+                # print(len(word_vector.split()))
+                embedding_matrix[index,:] = word_vector.split()[0:]
+            else:
+                embedding_matrix[index,:] = word_vector.split()[1:]
+            index += 1
+    else:
+        s = sagemaker.Session()
+        all_files= s.list_s3_files(config["bucket"],config["embeddings_path"])
+        result = s.read_s3_file(config["bucket"],all_files[0])
+        file = result.split("\n")[:-1]
+        for word_vector in file:
+            if(len(word_vector.split())==25):
+                # print(len(word_vector.split()))
+                embedding_matrix[index,:] = word_vector.split()[0:]
+            else:
+                embedding_matrix[index,:] = word_vector.split()[1:]
+            index += 1
 
     # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Embedding
     model.add(tf.keras.layers.Embedding(input_length = config["padding_size"], 
